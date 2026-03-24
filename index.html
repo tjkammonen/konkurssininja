@@ -2,44 +2,207 @@
 <html lang="fi">
 <head>
     <meta charset="UTF-8">
-    <title>Konkurssikone Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konkurssivahti 2026 - Alueseuranta</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
-        .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
-        select { padding: 10px; width: 100%; margin-bottom: 20px; font-size: 16px; }
-        .meta { color: #666; font-size: 0.9em; }
+        :root {
+            --prh-blue: #035ca7;
+            --accent: #f24e1e;
+            --bg: #f0f2f5;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        header { 
+            background: var(--prh-blue); color: white; padding: 20px; 
+            border-radius: 12px; margin-bottom: 20px; text-align: center;
+        }
+
+        .filter-panel {
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; margin-bottom: 20px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        select, input, button { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        
+        button { 
+            background: var(--accent); color: white; border: none; 
+            font-weight: bold; cursor: pointer; height: 45px; margin-top: auto;
+        }
+
+        .stats-bar {
+            background: #e3f2fd; padding: 10px 20px; border-radius: 8px;
+            margin-bottom: 20px; font-weight: 600; color: #01579b;
+        }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        
+        .card {
+            background: white; padding: 20px; border-radius: 10px;
+            border-top: 5px solid var(--accent);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-3px); }
+        .card h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: var(--prh-blue); }
+        .card p { margin: 5px 0; font-size: 0.9rem; color: #555; }
+        .tag { background: #eee; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; }
+        
+        .ytj-link { 
+            display: block; margin-top: 15px; text-align: center; 
+            text-decoration: none; color: #035ca7; font-weight: 600; font-size: 0.85rem;
+        }
+
+        #loading { text-align: center; padding: 40px; display: none; }
     </style>
 </head>
 <body>
-    <h1>📉 Konkurssikone</h1>
-    <p>Seuraa alueesi tuoreimpia konkurssi-ilmoituksia (30 vrk).</p>
 
-    <select id="kuntavalinta">
-        <option value="">Valitse kunta...</option>
-    </select>
+<div class="container">
+    <header>
+        <h1>📉 Konkurssikone: Alueellinen seuranta</h1>
+        <p>PRH Open Data - Maaliskuu 2026</p>
+    </header>
 
-    <div id="tulokset">Ladataan tietoja...</div>
+    <div class="filter-panel">
+        <div class="form-group">
+            <label>Maakunta</label>
+            <select id="regionSelect" onchange="updateMunicipalities()">
+                <option value="">Koko Suomi</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Kunta</label>
+            <select id="municipalitySelect">
+                <option value="">Kaikki kunnat</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Aikaväli alkaen</label>
+            <input type="date" id="startDate">
+        </div>
+        <button onclick="fetchData()">Päivitä näkymä</button>
+    </div>
 
-    <script>
-     async function lataaDataSuoraan() {
-    const tänään = new Date();
-    const kkSitten = new Date(tänään.setDate(tänään.getDate() - 30)).toISOString().split('T')[0];
-    
-    // Suora URL PRH:n rajapintaan
-    const url = `https://avoindata.prh.fi/bis/v1/announcements?maxResults=100&announcementType=KONKURSSI&entryDateFrom=${kkSitten}`;
+    <div id="loading">Haetaan tuoreimpia ilmoituksia...</div>
+    <div id="stats" class="stats-bar" style="display:none"></div>
+    <div id="results" class="grid"></div>
+</div>
 
-    try {
-        const response = await fetch(url); // Tässä kohtaa CORS yleensä estää latauksen
-        const rawData = await response.json();
-        const data = rawData.results;
+<script>
+    // 1. Luettelo maakunnista ja tärkeimmistä kunnista (demo-tarkoitukseen)
+    // Oikeassa tuotantoversiossa tämä kannattaa hakea JSON-tiedostosta
+    const REGIONS = {
+        "Uusimaa": ["HELSINKI", "ESPOO", "VANTAA", "HYVINKÄÄ", "JÄRVENPÄÄ", "KERAVA", "KIRKKONUMMI", "LOHJA", "PORVOO", "SIPOO"],
+        "Pirkanmaa": ["TAMPERE", "NOKIA", "YLÖJÄRVI", "KANGASALA", "LEMPÄÄLÄ", "PIRKKALA", "SASTAMALA", "VALKEAKOSKI"],
+        "Varsinais-Suomi": ["TURKU", "SALO", "KAARINA", "RAISIO", "NAANTALI", "LIETO"],
+        "Pohjois-Pohjanmaa": ["OULU", "RAAHE", "KUUSAMO", "KEMPELE"],
+        "Keski-Suomi": ["JYVÄSKYLÄ", "ÄÄNEKOSKI", "LAUKAA", "JÄMSÄ"],
+        "Pohjois-Savo": ["KUOPIO", "IISALMI", "VARKAUS"],
+        "Satakunta": ["PORI", "RAUMA", "EURA", "ULVILA"]
+        // Tähän voi lisätä loput maakunnat tarpeen mukaan
+    };
+
+    // Alustus
+    const regionSelect = document.getElementById('regionSelect');
+    const municipalitySelect = document.getElementById('municipalitySelect');
+    const startInput = document.getElementById('startDate');
+
+    // Täytetään maakunnat
+    Object.keys(REGIONS).sort().forEach(r => {
+        regionSelect.options.add(new Option(r, r));
+    });
+
+    // Asetetaan oletuspäivä (30 pv sitten)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    startInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+
+    function updateMunicipalities() {
+        const selectedRegion = regionSelect.value;
+        municipalitySelect.innerHTML = '<option value="">Kaikki kunnat</option>';
         
-        // ... (tässä sama renderöintilogiikka kuin aiemmin)
-        console.log("Haku onnistui suoraan rajapinnasta!");
-    } catch (error) {
-        console.error("Haku epäonnistui (todennäköisesti CORS):", error);
-        document.getElementById('tulokset').innerHTML = "Virhe: Rajapinta ei salli suoraa hakua selaimesta.";
+        if (selectedRegion && REGIONS[selectedRegion]) {
+            REGIONS[selectedRegion].sort().forEach(m => {
+                municipalitySelect.options.add(new Option(m, m));
+            });
+        }
     }
-}
-    </script>
+
+    async function fetchData() {
+        const resultsDiv = document.getElementById('results');
+        const loader = document.getElementById('loading');
+        const stats = document.getElementById('stats');
+        const start = startInput.value;
+        
+        // TÄRKEÄÄ: Jos haetaan kunnalla, käytetään API:n 'location' parametria
+        // Jos haetaan maakunnalla, haetaan laajemmin ja suodatetaan selaimessa
+        const selectedMuni = municipalitySelect.value;
+        let url = `https://avoindata.prh.fi/opendata-registerednotices-api/v3/?entryCode=KONALK&noticeRegistrationDateStart=${start}`;
+        
+        if (selectedMuni) {
+            url += `&location=${encodeURIComponent(selectedMuni)}`;
+        }
+
+        resultsDiv.innerHTML = '';
+        loader.style.display = 'block';
+        stats.style.display = 'none';
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            const companies = data.companies || [];
+            
+            // Paikallinen suodatus, jos on valittu maakunta mutta ei tiettyä kuntaa
+            let filtered = companies;
+            if (regionSelect.value && !selectedMuni) {
+                const allowedMunis = REGIONS[regionSelect.value];
+                filtered = companies.filter(c => {
+                    const city = getCity(c);
+                    return allowedMunis.includes(city.toUpperCase());
+                });
+            }
+
+            loader.style.display = 'none';
+            stats.style.display = 'block';
+            stats.innerText = `Näytetään ${filtered.length} konkurssi-ilmoitusta valitulla rajauksella.`;
+
+            filtered.forEach(c => {
+                const name = c.names.find(n => n.version === 1)?.name || 'Nimetön';
+                const city = getCity(c);
+                const zip = c.addresses?.[0]?.postCode || '-----';
+                const date = c.publicNotices?.[0]?.registrationDate || '---';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${name}</h3>
+                    <p><strong>Sijainti:</strong> ${city} <span class="tag">${zip}</span></p>
+                    <p><strong>Y-tunnus:</strong> ${c.businessId.value}</p>
+                    <p><strong>Rekisteröity:</strong> ${date}</p>
+                    <a href="https://tietopalvelu.ytj.fi/yritystiedot.aspx?y-tunnus=${c.businessId.value}" 
+                       target="_blank" class="ytj-link">YTJ-yritystiedot →</a>
+                `;
+                resultsDiv.appendChild(card);
+            });
+
+        } catch (err) {
+            loader.innerHTML = '<p style="color:red">Virhe haettaessa dataa. API-yhteys saattaa vaatia CORS-proxyn selaimessa.</p>';
+        }
+    }
+
+    function getCity(company) {
+        // Poimitaan kaupungin nimi API-vastauksen syövereistä
+        return company.addresses?.[0]?.postOffices?.find(p => p.languageCode === "1")?.city || 'Tuntematon';
+    }
+
+    // Ensimmäinen haku
+    fetchData();
+</script>
+
 </body>
 </html>
