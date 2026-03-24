@@ -3,76 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konkurssivahti 2026 - Alueseuranta</title>
+    <title>Konkurssininja v3.0 - Alueseuranta</title>
     <style>
         :root {
-            --prh-blue: #035ca7;
-            --accent: #f24e1e;
-            --bg: #f0f2f5;
+            --primary: #035ca7;
+            --secondary: #2c3e50;
+            --accent: #e74c3c;
+            --bg: #f8f9fa;
+            --card: #ffffff;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        header { 
-            background: var(--prh-blue); color: white; padding: 20px; 
-            border-radius: 12px; margin-bottom: 20px; text-align: center;
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--secondary);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .filter-panel {
-            background: white; padding: 20px; border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px; margin-bottom: 20px;
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            align-items: end;
         }
 
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        select, input, button { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        
-        button { 
-            background: var(--accent); color: white; border: none; 
-            font-weight: bold; cursor: pointer; height: 45px; margin-top: auto;
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .stats-bar {
-            background: #e3f2fd; padding: 10px 20px; border-radius: 8px;
-            margin-bottom: 20px; font-weight: 600; color: #01579b;
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
         }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        
+        select, input, button {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            height: 50px;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .status-bar {
+            background: #e1f5fe;
+            color: #01579b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
         .card {
-            background: white; padding: 20px; border-radius: 10px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
             border-top: 5px solid var(--accent);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
             transition: transform 0.2s;
         }
-        .card:hover { transform: translateY(-3px); }
-        .card h3 { margin: 0 0 10px 0; font-size: 1.1rem; color: var(--prh-blue); }
-        .card p { margin: 5px 0; font-size: 0.9rem; color: #555; }
-        .tag { background: #eee; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; }
-        
-        .ytj-link { 
-            display: block; margin-top: 15px; text-align: center; 
-            text-decoration: none; color: #035ca7; font-weight: 600; font-size: 0.85rem;
+
+        .card:hover {
+            transform: translateY(-5px);
         }
 
-        #loading { text-align: center; padding: 40px; display: none; }
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .info-label { color: #777; }
+        .info-value { font-weight: 500; }
+
+        .tag {
+            background: #eee;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #444;
+        }
+
+        .ytj-link {
+            margin-top: auto;
+            text-align: center;
+            padding: 10px;
+            background: #f0f2f5;
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .ytj-link:hover {
+            background: #e2e5e9;
+        }
+
+        #loader {
+            text-align: center;
+            padding: 50px;
+            font-weight: bold;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .filter-panel { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>📉 Konkurssikone: Alueellinen seuranta</h1>
-        <p>PRH Open Data - Maaliskuu 2026</p>
+        <h1>📉 Konkurssininja v3.0</h1>
+        <p>PRH Open Data: Konkurssiin asetetut yritykset maakunnittain</p>
     </header>
 
     <div class="filter-panel">
         <div class="form-group">
             <label>Maakunta</label>
             <select id="regionSelect" onchange="updateMunicipalities()">
-                <option value="">Koko Suomi</option>
+                <option value="">Ladataan maakuntia...</option>
             </select>
         </div>
         <div class="form-group">
@@ -82,126 +193,152 @@
             </select>
         </div>
         <div class="form-group">
-            <label>Aikaväli alkaen</label>
+            <label>Alkaen pvm</label>
             <input type="date" id="startDate">
         </div>
-        <button onclick="fetchData()">Päivitä näkymä</button>
+        <button onclick="fetchData()">Hae tiedot</button>
     </div>
 
-    <div id="loading">Haetaan tuoreimpia ilmoituksia...</div>
-    <div id="stats" class="stats-bar" style="display:none"></div>
+    <div id="loader">Haetaan tietoja PRH:n rajapinnasta...</div>
+    <div id="status" class="status-bar"></div>
     <div id="results" class="grid"></div>
 </div>
 
 <script>
-    // 1. Luettelo maakunnista ja tärkeimmistä kunnista (demo-tarkoitukseen)
-    // Oikeassa tuotantoversiossa tämä kannattaa hakea JSON-tiedostosta
-    const REGIONS = {
-        "Uusimaa": ["HELSINKI", "ESPOO", "VANTAA", "HYVINKÄÄ", "JÄRVENPÄÄ", "KERAVA", "KIRKKONUMMI", "LOHJA", "PORVOO", "SIPOO"],
-        "Pirkanmaa": ["TAMPERE", "NOKIA", "YLÖJÄRVI", "KANGASALA", "LEMPÄÄLÄ", "PIRKKALA", "SASTAMALA", "VALKEAKOSKI"],
-        "Varsinais-Suomi": ["TURKU", "SALO", "KAARINA", "RAISIO", "NAANTALI", "LIETO"],
-        "Pohjois-Pohjanmaa": ["OULU", "RAAHE", "KUUSAMO", "KEMPELE"],
-        "Keski-Suomi": ["JYVÄSKYLÄ", "ÄÄNEKOSKI", "LAUKAA", "JÄMSÄ"],
-        "Pohjois-Savo": ["KUOPIO", "IISALMI", "VARKAUS"],
-        "Satakunta": ["PORI", "RAUMA", "EURA", "ULVILA"]
-        // Tähän voi lisätä loput maakunnat tarpeen mukaan
-    };
-
-    // Alustus
+    let REGIONS = {};
     const regionSelect = document.getElementById('regionSelect');
     const municipalitySelect = document.getElementById('municipalitySelect');
-    const startInput = document.getElementById('startDate');
+    const startDateInput = document.getElementById('startDate');
+    const resultsGrid = document.getElementById('results');
+    const loader = document.getElementById('loader');
+    const statusBox = document.getElementById('status');
 
-    // Täytetään maakunnat
-    Object.keys(REGIONS).sort().forEach(r => {
-        regionSelect.options.add(new Option(r, r));
-    });
+    // 1. Alustus: Asetetaan päivämäärä (30 pv sitten) ja ladataan JSON
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    startDateInput.value = d.toISOString().split('T')[0];
 
-    // Asetetaan oletuspäivä (30 pv sitten)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    startInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+    async function initialize() {
+        try {
+            // Ladataan maakunnat.json
+            const response = await fetch('maakunnat.json');
+            if (!response.ok) throw new Error("JSON-lataus epäonnistui");
+            REGIONS = await response.json();
+            
+            // Täytetään maakuntavalikko
+            regionSelect.innerHTML = '<option value="">Koko Suomi</option>';
+            Object.keys(REGIONS).sort().forEach(region => {
+                regionSelect.options.add(new Option(region, region));
+            });
+        } catch (err) {
+            console.error(err);
+            regionSelect.innerHTML = '<option value="">Virhe ladattaessa datoja</option>';
+        }
+    }
 
+    // 2. Päivitä kunnat valinnan mukaan
     function updateMunicipalities() {
         const selectedRegion = regionSelect.value;
         municipalitySelect.innerHTML = '<option value="">Kaikki kunnat</option>';
         
         if (selectedRegion && REGIONS[selectedRegion]) {
-            REGIONS[selectedRegion].sort().forEach(m => {
-                municipalitySelect.options.add(new Option(m, m));
+            REGIONS[selectedRegion].sort().forEach(muni => {
+                // Muunnetaan "HELSINKI" -> "Helsinki" näyttöä varten
+                const displayMuni = muni.charAt(0) + muni.slice(1).toLowerCase();
+                municipalitySelect.options.add(new Option(displayMuni, muni));
             });
         }
     }
 
+    // 3. Hae data PRH:sta
     async function fetchData() {
-        const resultsDiv = document.getElementById('results');
-        const loader = document.getElementById('loading');
-        const stats = document.getElementById('stats');
-        const start = startInput.value;
-        
-        // TÄRKEÄÄ: Jos haetaan kunnalla, käytetään API:n 'location' parametria
-        // Jos haetaan maakunnalla, haetaan laajemmin ja suodatetaan selaimessa
+        const start = startDateInput.value;
         const selectedMuni = municipalitySelect.value;
+        const selectedRegion = regionSelect.value;
+
+        resultsGrid.innerHTML = '';
+        loader.style.display = 'block';
+        statusBox.style.display = 'none';
+
+        // Rakennetaan URL. Jos kunta on valittu, käytetään location-filtteriä suoraan API:ssa
         let url = `https://avoindata.prh.fi/opendata-registerednotices-api/v3/?entryCode=KONALK&noticeRegistrationDateStart=${start}`;
         
         if (selectedMuni) {
             url += `&location=${encodeURIComponent(selectedMuni)}`;
         }
 
-        resultsDiv.innerHTML = '';
-        loader.style.display = 'block';
-        stats.style.display = 'none';
-
         try {
             const response = await fetch(url);
             const data = await response.json();
-            const companies = data.companies || [];
-            
-            // Paikallinen suodatus, jos on valittu maakunta mutta ei tiettyä kuntaa
-            let filtered = companies;
-            if (regionSelect.value && !selectedMuni) {
-                const allowedMunis = REGIONS[regionSelect.value];
-                filtered = companies.filter(c => {
-                    const city = getCity(c);
-                    return allowedMunis.includes(city.toUpperCase());
+            let companies = data.companies || [];
+
+            // 4. Jos on valittu maakunta, mutta EI tiettyä kuntaa -> suodatetaan paikallisesti
+            if (selectedRegion && !selectedMuni) {
+                const allowedMunis = REGIONS[selectedRegion]; // Nämä ovat uppercase listassa
+                companies = companies.filter(c => {
+                    const city = getCity(c).toUpperCase();
+                    return allowedMunis.includes(city);
                 });
             }
 
+            // Näytetään tulokset
             loader.style.display = 'none';
-            stats.style.display = 'block';
-            stats.innerText = `Näytetään ${filtered.length} konkurssi-ilmoitusta valitulla rajauksella.`;
+            statusBox.style.display = 'block';
+            statusBox.innerText = `Löytyi ${companies.length} konkurssi-ilmoitusta valituilla ehdoilla.`;
 
-            filtered.forEach(c => {
-                const name = c.names.find(n => n.version === 1)?.name || 'Nimetön';
-                const city = getCity(c);
-                const zip = c.addresses?.[0]?.postCode || '-----';
-                const date = c.publicNotices?.[0]?.registrationDate || '---';
+            if (companies.length === 0) {
+                resultsGrid.innerHTML = '<p>Ei tuloksia valitulla aikavälillä/alueella.</p>';
+                return;
+            }
+
+            companies.forEach(company => {
+                const name = company.names.find(n => n.version === 1)?.name || 'Nimetön yritys';
+                const city = getCity(company);
+                const zip = company.addresses?.[0]?.postCode || '---';
+                const regDate = company.publicNotices?.[0]?.registrationDate || '---';
+                const bid = company.businessId.value;
 
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
                     <h3>${name}</h3>
-                    <p><strong>Sijainti:</strong> ${city} <span class="tag">${zip}</span></p>
-                    <p><strong>Y-tunnus:</strong> ${c.businessId.value}</p>
-                    <p><strong>Rekisteröity:</strong> ${date}</p>
-                    <a href="https://tietopalvelu.ytj.fi/yritystiedot.aspx?y-tunnus=${c.businessId.value}" 
-                       target="_blank" class="ytj-link">YTJ-yritystiedot →</a>
+                    <div class="info-item">
+                        <span class="info-label">Sijainti:</span>
+                        <span class="info-value">${city} <span class="tag">${zip}</span></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Y-tunnus:</span>
+                        <span class="info-value">${bid}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Alkamispäivä:</span>
+                        <span class="info-value">${regDate}</span>
+                    </div>
+                    <a href="https://tietopalvelu.ytj.fi/yritystiedot.aspx?y-tunnus=${bid}" 
+                       target="_blank" class="ytj-link">Tarkasta YTJ-tiedot →</a>
                 `;
-                resultsDiv.appendChild(card);
+                resultsGrid.appendChild(card);
             });
 
         } catch (err) {
-            loader.innerHTML = '<p style="color:red">Virhe haettaessa dataa. API-yhteys saattaa vaatia CORS-proxyn selaimessa.</p>';
+            loader.style.display = 'none';
+            statusBox.style.display = 'block';
+            statusBox.style.background = '#fdecea';
+            statusBox.style.color = '#c0392b';
+            statusBox.innerText = "Virhe datan haussa. PRH:n rajapinta saattaa estää suoran haun (CORS).";
+            console.error(err);
         }
     }
 
+    // Apufunktio kaupungin nimen kaivamiseen
     function getCity(company) {
-        // Poimitaan kaupungin nimi API-vastauksen syövereistä
-        return company.addresses?.[0]?.postOffices?.find(p => p.languageCode === "1")?.city || 'Tuntematon';
+        if (!company.addresses || company.addresses.length === 0) return 'Tuntematon';
+        const postOffice = company.addresses[0].postOffices?.find(p => p.languageCode === "1");
+        return postOffice ? postOffice.city : 'Tuntematon';
     }
 
-    // Ensimmäinen haku
-    fetchData();
+    // Käynnistetään alustus
+    initialize();
 </script>
 
 </body>
