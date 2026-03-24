@@ -21,37 +21,25 @@
     <div id="tulokset">Ladataan tietoja...</div>
 
     <script>
-        async function lataaData() {
-            const response = await fetch('konkurssit.json');
-            const data = await response.json();
-            const container = document.getElementById('tulokset');
-            const select = document.getElementById('kuntavalinta');
+     async function lataaDataSuoraan() {
+    const tänään = new Date();
+    const kkSitten = new Date(tänään.setDate(tänään.getDate() - 30)).toISOString().split('T')[0];
+    
+    // Suora URL PRH:n rajapintaan
+    const url = `https://avoindata.prh.fi/bis/v1/announcements?maxResults=100&announcementType=KONKURSSI&entryDateFrom=${kkSitten}`;
 
-            // Hae uniikit kaupungit valikkoon
-            const kaupungit = [...new Set(data.map(i => i.courtDistrict || "Muu"))].sort();
-            kaupungit.forEach(k => {
-                const opt = document.createElement('option');
-                opt.value = opt.text = k;
-                select.add(opt);
-            });
-
-            function naytaTiedot(filtteri = "") {
-                const suodatettu = filtteri ? data.filter(i => i.courtDistrict === filtteri) : data;
-                container.innerHTML = suodatettu.length ? "" : "Ei ilmoituksia valitulla alueella.";
-                
-                suodatettu.forEach(i => {
-                    container.innerHTML += `
-                        <div class="card">
-                            <strong>${i.name}</strong> (${i.businessId})<br>
-                            <span class="meta">Kuulutuspäivä: ${i.entryDate} | Alue: ${i.courtDistrict}</span>
-                        </div>`;
-                });
-            }
-
-            select.addEventListener('change', (e) => naytaTiedot(e.target.value));
-            naytaTiedot();
-        }
-        lataaData();
+    try {
+        const response = await fetch(url); // Tässä kohtaa CORS yleensä estää latauksen
+        const rawData = await response.json();
+        const data = rawData.results;
+        
+        // ... (tässä sama renderöintilogiikka kuin aiemmin)
+        console.log("Haku onnistui suoraan rajapinnasta!");
+    } catch (error) {
+        console.error("Haku epäonnistui (todennäköisesti CORS):", error);
+        document.getElementById('tulokset').innerHTML = "Virhe: Rajapinta ei salli suoraa hakua selaimesta.";
+    }
+}
     </script>
 </body>
 </html>
