@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Konkurssikone Demo</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        select { padding: 10px; width: 100%; margin-bottom: 20px; font-size: 16px; }
+        .meta { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>📉 Konkurssikone</h1>
+    <p>Seuraa alueesi tuoreimpia konkurssi-ilmoituksia (30 vrk).</p>
+
+    <select id="kuntavalinta">
+        <option value="">Valitse kunta...</option>
+    </select>
+
+    <div id="tulokset">Ladataan tietoja...</div>
+
+    <script>
+        async function lataaData() {
+            const response = await fetch('konkurssit.json');
+            const data = await response.json();
+            const container = document.getElementById('tulokset');
+            const select = document.getElementById('kuntavalinta');
+
+            // Hae uniikit kaupungit valikkoon
+            const kaupungit = [...new Set(data.map(i => i.courtDistrict || "Muu"))].sort();
+            kaupungit.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = opt.text = k;
+                select.add(opt);
+            });
+
+            function naytaTiedot(filtteri = "") {
+                const suodatettu = filtteri ? data.filter(i => i.courtDistrict === filtteri) : data;
+                container.innerHTML = suodatettu.length ? "" : "Ei ilmoituksia valitulla alueella.";
+                
+                suodatettu.forEach(i => {
+                    container.innerHTML += `
+                        <div class="card">
+                            <strong>${i.name}</strong> (${i.businessId})<br>
+                            <span class="meta">Kuulutuspäivä: ${i.entryDate} | Alue: ${i.courtDistrict}</span>
+                        </div>`;
+                });
+            }
+
+            select.addEventListener('change', (e) => naytaTiedot(e.target.value));
+            naytaTiedot();
+        }
+        lataaData();
+    </script>
+</body>
+</html>
